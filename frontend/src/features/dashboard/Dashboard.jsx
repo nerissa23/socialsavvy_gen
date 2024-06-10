@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { ToastContainer, toast } from "react-toastify";
-import "./dashboard.css";
+// import "./dashboard.css";
 
 
 function Dashboard() {

@@ -3,8 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { signInStart, signInSuccess, signInFailure } from "../../redux/user/userSlice.js";
 import { useDispatch, useSelector } from "react-redux";
+import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
 
 import "./style1.css"
+import { app } from "../../firebase.js";
 // import logo from "../../assets/images/socialsavvy-logo.png"
 
 function Register() {
@@ -35,17 +37,41 @@ function Register() {
             console.log("Response text:", text);
 
             const data = JSON.parse(text);
-            dispatch(signInSuccess(data));
             if (data.success === false) {
-                dispatch(signInFailure());
+                dispatch(signInFailure(data));
                 return;
             }
+            dispatch(signInSuccess(data));
             navigate("/login");
         } catch (error) {
             dispatch(signInFailure(error));
         }
 
     };
+    
+    const handleGoogleClick = async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            const auth = getAuth(app);
+
+            const result = await signInWithPopup(auth, provider);
+            const res = await fetch("/backend/auth/google", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name: result.user.displayName,
+                    email: result.user.email,
+                    photo: result.user.photoURL,
+                }),
+            });
+            const data = await res.json();
+            dispatch(signInSuccess(data));
+        } catch (error) {
+            console.log("Could not login with Google", error)
+        }
+    }
 
     return (
         <div className="split-screen">
@@ -68,8 +94,8 @@ function Register() {
                         <div className="signup-container">
                             <p>Already have an account? <Link to="/login"><strong>Log in</strong></Link></p>
                         </div>
-                        <button className="signup-w-google-btn">
-                            <Link to="/login">Sign up with Google</Link>
+                        <button type="button" onClick={handleGoogleClick} className="signup-w-google-btn">
+                            Sign up with Google
                         </button>
                         <div>
                             <svg width="130" height="1">
@@ -115,7 +141,7 @@ function Register() {
                         />
                         <i className="far fa-eye-slash"></i>
                     </div>
-                    <p className="errorMsg">{error && "Something went wrong!"}</p>
+                    <p className="errorMsg">{error ? error || "Something went wrong!" : ""}</p>
                     <button disabled={loading} className="signup-btn" type="submit">
                         {loading ? "Loading..." : "Sign Up"}
                     </button>

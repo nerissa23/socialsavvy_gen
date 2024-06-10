@@ -8,5 +8,6 @@ router.post("/signin", signin);
 router.post("/google", google);
 router.post("/signout", signout);
 router.post("/dashboard", authenticate);
+router.post("/google", google);
 
 export default router;
